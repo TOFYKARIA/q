@@ -6,8 +6,8 @@ import aiohttp
 import logging
 import pytz
 from datetime import datetime
-from telethon.tl.functions.account import UpdateProfileRequest
 import os
+from telethon.tl.functions.account import UpdateProfileRequest  # Добавлен импорт для изменения профиля
 import time
 
 # Конфигурация
@@ -259,7 +259,7 @@ async def update_nick(client):
     """Обновление времени в нике"""
     while _time_running:
         current_time = datetime.now(pytz.timezone(_time_timezone)).strftime("%H:%M")
-        await client(EditProfileRequest(first_name=current_time))
+        await client(UpdateProfileRequest(first_name=current_time))  # Используем UpdateProfileRequest
         await asyncio.sleep(60)  # Обновление каждую минуту
 
 # Основной код для запуска бота
