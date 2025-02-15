@@ -102,7 +102,7 @@ async def secret_handler(event):
 async def help_handler(event):
     """Показывает список всех команд"""
     
-    help_text = """🔮UGCLAWS USERBOT Lite🔮
+    help_text = """🔮MQVON USERBOT LITE🔮
 
 Доступные команды:
 • 💧.help - показать это сообщение
