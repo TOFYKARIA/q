@@ -6,6 +6,7 @@ import aiohttp
 import logging
 import pytz
 from datetime import datetime
+from telethon.tl.functions.account import UpdateProfileRequest
 import os
 import time
 
