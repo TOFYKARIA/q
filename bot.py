@@ -26,7 +26,7 @@ api_hash = input("Введите api_hash: ")
 client = TelegramClient('session_name', int(api_id), api_hash)
 
 # Команда для loliart
-@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loliart'))
+@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]art'))
 async def artcmd(event):
     """-> RandomArt"""
     
@@ -67,7 +67,7 @@ async def lolicmd(event):
         try: 
             lh = await conv.send_message("/lh")
         except Exception as e:
-            return await event.respond("инвалид разблокируй @Ferganteusbot")
+            return await event.respond("Инвалид, разблокируй @Ferganteusbot")
         
         otvet = await conv.get_response()
         await lh.delete()
@@ -90,9 +90,9 @@ async def secret_handler(event):
     # Проверяем правильность пароля
     if code == SECRET_CODE:
         unlocked_commands[event.sender_id] = True
-        await event.reply("нихуя сибе Теперь вы можете использовать команды .loli и .loliart.")
+        await event.reply("Теперь вы можете использовать команды .loli и .art.")
     else:
-        await event.reply("долбаебище это не тот код. папробуей ещо")
+        await event.reply("Неверный код. Попробуйте снова.")
 
 # Обновленная команда help
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
