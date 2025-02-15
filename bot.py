@@ -35,10 +35,10 @@ async def loliartcmd(event):
         await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
         return
     
-    await event.respond("<emoji document_id=5215327832040811010>🔮</emoji> <b>Process your Loli Art...</b>")
+    await event.respond("")
     
     async with client.conversation("@AnimeLoliChan_bot") as conv:
-        await conv.send_message("/lol")
+        await conv.send_message("/loli")
         otvet = await conv.get_response()
         
         if otvet.photo:
@@ -61,13 +61,13 @@ async def lolicmd(event):
         await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
         return
     
-    await event.respond("<emoji document_id=5215327832040811010>⏳</emoji> <b>loading your loli photo...</b>")
+    await event.respond("")
     
     async with client.conversation("@ferganteusbot") as conv:
         try: 
             lh = await conv.send_message("/lh")
         except Exception as e:
-            return await event.respond("<b>Failed to get photos. Please unblock @ferganteusbot</b>")
+            return await event.respond("Failed to get photos. Please unblock @ferganteusbot")
         
         otvet = await conv.get_response()
         await lh.delete()
