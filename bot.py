@@ -92,14 +92,14 @@ async def secret_handler(event):
         unlocked_commands[event.sender_id] = True
         await event.reply("нихуя сибе Теперь вы можете использовать команды .loli и .loliart.")
     else:
-        await event.reply("долбаебище это не тот код. Попробуйте снова.")
+        await event.reply("долбаебище это не тот код. папробуей ещо")
 
 # Обновленная команда help
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
 async def help_handler(event):
     """Показывает список всех команд"""
     
-    help_text = """🔱 UGCLAWS USERBOT 🔱
+    help_text = """🔮UGCLAWS USERBOT Lite🔮
 
 Доступные команды:
 • 💧.help - показать это сообщение
