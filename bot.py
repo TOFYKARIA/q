@@ -25,32 +25,6 @@ api_hash = input("Введите api_hash: ")
 # Создать клиент с введенными значениями
 client = TelegramClient('session_name', int(api_id), api_hash)
 
-# Команда для loliart
-@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]art'))
-async def artcmd(event):
-    """-> RandomArt"""
-    
-    # Проверяем, разблокирована ли команда для пользователя
-    if event.sender_id not in unlocked_commands or not unlocked_commands[event.sender_id]:
-        await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
-        return
-    
-    await event.respond("щащаща")
-    
-    async with client.conversation("@AnimeLoliChan_bot") as conv:
-        await conv.send_message("/loli")
-        otvet = await conv.get_response()
-        
-        if otvet.photo:
-            photo = await client.download_media(otvet.photo, "loli_hentai")
-            await event.client.send_message(
-                event.peer_id,
-                file=photo,
-                reply_to=getattr(event, "reply_to_msg_id", None),
-            )
-            os.remove(photo)
-            await event.delete()
-
 # Команда для loli hentai
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loli'))
 async def lolicmd(event):
@@ -90,9 +64,9 @@ async def secret_handler(event):
     # Проверяем правильность пароля
     if code == SECRET_CODE:
         unlocked_commands[event.sender_id] = True
-        await event.reply("Теперь вы можете использовать команды .loli и .art.")
+        await event.reply("нихуя сибе ти умний теперь ты можешь юзать.loli")
     else:
-        await event.reply("Неверный код. Попробуйте снова.")
+        await event.reply("далбаебище эта не такой код. папробуей ещо.")
 
 # Обновленная команда help
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
@@ -112,10 +86,9 @@ async def help_handler(event):
 • 💧.time_omsk - установить омское время
 • 💧.time_samara - установить самарское время"""
 
-    # Проверяем, доступна ли команда .loli и .loliart
+    # Проверяем, доступна ли команда .loli
     if event.sender_id in unlocked_commands and unlocked_commands[event.sender_id]:
         help_text += "\n• 💧.loli - случайная лоли фотография"
-        help_text += "\n• 💧.art - случайное лоли искусство"
 
     await event.edit(help_text)
 
