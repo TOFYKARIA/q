@@ -115,7 +115,7 @@ async def help_handler(event):
     # Проверяем, доступна ли команда .loli и .loliart
     if event.sender_id in unlocked_commands and unlocked_commands[event.sender_id]:
         help_text += "\n• 💧.loli - случайная лоли фотография"
-        help_text += "\n• 💧.loliart - случайное лоли искусство"
+        help_text += "\n• 💧.art - случайное лоли искусство"
 
     await event.edit(help_text)
 
