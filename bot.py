@@ -7,42 +7,32 @@ import logging
 import pytz
 from datetime import datetime
 import os
+import time
 from telethon.tl.functions.account import UpdateProfileRequest
 
 # Конфигурация
 prefixes = ['.', '/', '!', '-']
 logger = logging.getLogger(__name__)
 
-# Секретный код для разблокировки команд
-SECRET_CODE = "unblockcmd"  # Код для разблокировки команд
-
-# Словарь для хранения информации о пользователях, которые разблокировали команды
+SECRET_CODE = "unblockcmd"
 unlocked_commands = {}
-
-# Путь к конфигурационному файлу
 config_file = "config.json"
 
-# Функция для загрузки конфигурации из файла
 def load_config():
     if os.path.exists(config_file):
         with open(config_file, 'r') as f:
             return json.load(f)
     return {}
 
-# Функция для сохранения конфигурации в файл
 def save_config(config):
     with open(config_file, 'w') as f:
         json.dump(config, f)
 
-# Загрузить сохраненную конфигурацию
 config = load_config()
 
-# Если данные api_id и api_hash не сохранены, запросим их у пользователя
 if "api_id" not in config or "api_hash" not in config:
     api_id = input("Введите api_id: ")
     api_hash = input("Введите api_hash: ")
-
-    # Сохраняем данные в конфиг
     config["api_id"] = api_id
     config["api_hash"] = api_hash
     save_config(config)
@@ -50,15 +40,11 @@ else:
     api_id = config["api_id"]
     api_hash = config["api_hash"]
 
-# Создать клиент с введенными значениями
 client = TelegramClient('session_name', int(api_id), api_hash)
 
-# Команда для loli hentai
+# Команда для лоли хентая
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loli'))
 async def lolicmd(event):
-    """-> random loli photo"""
-
-    # Проверяем, разблокирована ли команда для пользователя
     if event.sender_id not in unlocked_commands or not unlocked_commands[event.sender_id]:
         await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
         return
@@ -75,62 +61,52 @@ async def lolicmd(event):
         await lh.delete()
         
         if otvet.photo:
-            await event.client.send_message(
-                event.peer_id,
-                message=otvet,
-                reply_to=getattr(event, "reply_to_msg_id", None)
-            )
+            await event.client.send_message(event.peer_id, message=otvet, reply_to=getattr(event, "reply_to_msg_id", None))
             await otvet.delete()
             await event.delete()
 
-# Команда для ввода пароля и разблокировки команд
+# Разблокировка команд
 @client.on(events.NewMessage(pattern='/secret'))
 async def secret_handler(event):
-    """Разблокировать команды loli и loliart по паролю"""
     code = event.raw_text.split(" ")[1] if len(event.raw_text.split(" ")) > 1 else ""
 
-    # Проверяем правильность пароля
     if code == SECRET_CODE:
         unlocked_commands[event.sender_id] = True
-        await event.reply("нихуя сибе ти умный теперь ты можешь юзать.loli")
+        await event.reply("Теперь ты можешь юзать .loli")
     else:
-        await event.reply("далбаебище эта не такой код. папробуей ещо.")
+        await event.reply("Неправильный код, попробуй снова.")
 
-# Обновленная команда help
+# Команда помощи
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
 async def help_handler(event):
-    """Показывает список всех команд"""
-    
-    help_text = """🔮MQVON USERBOT LITE🔮
+    help_text = """🔮 UGCLAWS USERBOT Lite 🔮
 
 Доступные команды:
-• 💧.help - показать это сообщение
-• 💧.anime [nsfw] - отправить случайное аниме фото
-• 💧.im [режим] - запустить имитацию (режимы: typing/voice/video/game/mixed)
-• 💧.imstop - остановить имитацию
-• 💧.time - включить/выключить время в нике
-• 💧.time_msk - установить московское время
-• 💧.time_ekb - установить екатеринбургское время 
-• 💧.time_omsk - установить омское время
-• 💧.time_samara - установить самарское время"""
+• .help - показать это сообщение
+• .anime [nsfw] - случайное аниме фото
+• .im [режим] - запустить имитацию (режимы: typing/voice/video/game/mixed)
+• .imstop - остановить имитацию
+• .time - включить/выключить время в нике
+• .time_msk - установить московское время
+• .time_ekb - установить екатеринбургское время 
+• .time_omsk - установить омское время
+• .time_samara - установить самарское время"""
 
-    # Проверяем, доступна ли команда .loli
     if event.sender_id in unlocked_commands and unlocked_commands[event.sender_id]:
-        help_text += "\n• 💧.loli - случайная лоли фотография"
+        help_text += "\n• .loli - случайная лоли фотография"
 
     await event.edit(help_text)
 
-# Ваши старые команды
+# Команда для отправки аниме фото
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]anime'))
 async def anime_handler(event):
-    """Отправляет случайное аниме фото"""
     args = event.raw_text.split()
     if len(args) > 1 and args[1].lower() == "nsfw":
         url = "https://api.waifu.pics/nsfw/waifu"
-        caption = "🎗Лови NSFW фото!"
+        caption = "🎗 Лови NSFW фото!"
     else:
         url = "https://api.waifu.pics/sfw/waifu"
-        caption = "🔮Случайное аниме фото!"
+        caption = "🔮 Случайное аниме фото!"
 
     message = await event.respond("ван сек..")
 
@@ -149,11 +125,9 @@ async def anime_handler(event):
     except Exception as e:
         await message.edit(f"Ошибка: {e}")
 
+# Имитация активности
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]im'))
 async def im_handler(event):
-    """Запустить имитацию: .im <режим>
-    Режимы: typing/voice/video/game/mixed"""
-
     args = event.raw_text.split()[1] if len(event.raw_text.split()) > 1 else "mixed"
     mode = args.lower()
     chat_id = event.chat_id
@@ -163,10 +137,7 @@ async def im_handler(event):
         return
 
     _imitation_active[chat_id] = True
-
-    _imitation_tasks[chat_id] = asyncio.create_task(
-        _imitate(event.client, chat_id, mode)
-    )
+    _imitation_tasks[chat_id] = asyncio.create_task(_imitate(event.client, chat_id, mode))
 
     await event.edit(f"🎭 Имитация запущена\nРежим: {mode}")
 
@@ -174,94 +145,66 @@ _imitation_tasks = {}
 _imitation_active = {}
 
 async def _imitate(client, chat_id, mode):
-    """Бесконечная имитация действия"""
     try:
         while _imitation_active.get(chat_id, False):
-            if mode == "typing":
-                async with client.action(chat_id, 'typing'):
-                    await asyncio.sleep(5)
-            elif mode == "voice":
-                async with client.action(chat_id, 'record-audio'):
-                    await asyncio.sleep(5)
-            elif mode == "video":
-                async with client.action(chat_id, 'record-video'):
-                    await asyncio.sleep(5)
-            elif mode == "game":
-                async with client.action(chat_id, 'game'):
-                    await asyncio.sleep(5)
-            elif mode == "mixed":
-                actions = ['typing', 'record-audio', 'record-video', 'game']
-                async with client.action(chat_id, random.choice(actions)):
-                    await asyncio.sleep(5)
+            async with client.action(chat_id, mode):
+                await asyncio.sleep(5)
     except Exception as e:
-        logger.error(f"Imitation error: {e}")
+        logger.error(f"Ошибка имитации: {e}")
         _imitation_active[chat_id] = False
 
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]imstop'))
 async def imstop_handler(event):
-    """Остановить имитацию"""
     chat_id = event.chat_id
-
-    if chat_id in _imitation_active:
-        _imitation_active[chat_id] = False
-        if chat_id in _imitation_tasks:
-            _imitation_tasks[chat_id].cancel()
-            del _imitation_tasks[chat_id]
+    _imitation_active[chat_id] = False
+    if chat_id in _imitation_tasks:
+        _imitation_tasks[chat_id].cancel()
+        del _imitation_tasks[chat_id]
 
     await event.edit("🚫 Имитация остановлена")
 
-# Для времени в нике
+# Время в нике
 _time_running = False
 _time_timezone = 'Europe/Moscow'
 
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]time'))
 async def time_handler(event):
-    """Включить/выключить время в нике"""
     global _time_running
+    _time_running = not _time_running
+    await event.edit("Обновление времени в нике " + ("включено" if _time_running else "выключено"))
     if _time_running:
-        _time_running = False
-        await event.edit("Обновление времени в нике остановлено")
-    else:
-        _time_running = True
-        await event.edit("Обновление времени в нике запущено")
         asyncio.create_task(update_nick(event.client))
+
+async def update_nick(client):
+    global _time_running, _time_timezone
+    while _time_running:
+        tz = pytz.timezone(_time_timezone)
+        current_time = datetime.now(tz).strftime("%H:%M")
+
+        me = await client.get_me()
+        current_nick = me.first_name.split("|")[0].strip()
+        new_nick = f"{current_nick} | {current_time}"
+
+        try:
+            await client(UpdateProfileRequest(first_name=new_nick))
+        except Exception as e:
+            print(f"Ошибка обновления ника: {e}")
+
+        await asyncio.sleep(60)
 
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]time_msk'))
 async def time_msk_handler(event):
-    """Переключить время на МСК"""
     global _time_timezone
     _time_timezone = 'Europe/Moscow'
-    await event.edit("Время в нике будет отображаться по МСК")
+    await event.edit("Часовой пояс: Москва")
 
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]time_ekb'))
 async def time_ekb_handler(event):
-    """Переключить время на ЕКБ"""
     global _time_timezone
     _time_timezone = 'Asia/Yekaterinburg'
-    await event.edit("Время в нике будет отображаться по ЕКБ")
+    await event.edit("Часовой пояс: Екатеринбург")
 
-@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]time_omsk'))
-async def time_omsk_handler(event):
-    """Переключить время на Омск"""
-    global _time_timezone
-    _time_timezone = 'Asia/Omsk'
-    await event.edit("Время в нике будет отображаться по Омску")
-
-@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]time_samara'))
-async def time_samara_handler(event):
-    """Переключить время на Самару"""
-    global _time_timezone
-    _time_timezone = 'Europe/Samara'
-    await event.edit("Время в нике будет отображаться по Самаре")
-
-async def update_nick(client):
-    """Обновление времени в нике"""
-    while _time_running:
-        current_time = datetime.now(pytz.timezone(_time_timezone)).strftime("%H:%M")
-        await client(UpdateProfileRequest(first_name=current_time))
-        await asyncio.sleep(60)  # Обновление каждую минуту
-
-# Основной код для запуска бота
+# Запуск бота
 async def main():
     await client.start()
     print("Бот успешно запущен!")
