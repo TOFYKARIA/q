@@ -7,8 +7,7 @@ import logging
 import pytz
 from datetime import datetime
 import os
-from telethon.tl.functions.account import UpdateProfileRequest  # Добавлен импорт для изменения профиля
-import time
+from telethon.tl.functions.account import UpdateProfileRequest
 
 # Конфигурация
 prefixes = ['.', '/', '!', '-']
@@ -102,7 +101,7 @@ async def secret_handler(event):
 async def help_handler(event):
     """Показывает список всех команд"""
     
-    help_text = """🔮MQVON USERBOT LITE🔮
+    help_text = """🔮UGCLAWS USERBOT Lite🔮
 
 Доступные команды:
 • 💧.help - показать это сообщение
@@ -259,7 +258,7 @@ async def update_nick(client):
     """Обновление времени в нике"""
     while _time_running:
         current_time = datetime.now(pytz.timezone(_time_timezone)).strftime("%H:%M")
-        await client(UpdateProfileRequest(first_name=current_time))  # Используем UpdateProfileRequest
+        await client(UpdateProfileRequest(first_name=current_time))
         await asyncio.sleep(60)  # Обновление каждую минуту
 
 # Основной код для запуска бота
