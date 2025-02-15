@@ -35,7 +35,7 @@ async def artcmd(event):
         await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
         return
     
-    await event.respond("")
+    await event.respond("щащаща")
     
     async with client.conversation("@AnimeLoliChan_bot") as conv:
         await conv.send_message("/loli")
@@ -61,7 +61,7 @@ async def lolicmd(event):
         await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
         return
     
-    await event.respond("")
+    await event.respond("щащащаща")
     
     async with client.conversation("@ferganteusbot") as conv:
         try: 
