@@ -27,7 +27,7 @@ client = TelegramClient('session_name', int(api_id), api_hash)
 
 # Команда для loliart
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loliart'))
-async def loliartcmd(event):
+async def artcmd(event):
     """-> RandomArt"""
     
     # Проверяем, разблокирована ли команда для пользователя
