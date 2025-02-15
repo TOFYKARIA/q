@@ -3,21 +3,26 @@ import asyncio
 import random
 import aiohttp
 import logging
-import pytz  # Импортируем pytz для работы с часовыми поясами
+import pytz
 from datetime import datetime
 import os
+import time
 
 # Конфигурация
 prefixes = ['.', '/', '!', '-']
 logger = logging.getLogger(__name__)
 
-# Секретный код
-SECRET_CODE = "unblockcmd"
+# Секретный код для разблокировки команд
+SECRET_CODE = "unblockcmd"  # Код для разблокировки команд
 
-# Команда loliart
+# Словарь для хранения информации о пользователях, которые разблокировали команды
+unlocked_commands = {}
+
+# Команда для loliart
 @loader.tds
 class loliArt(loader.Module):
     """RandomArt/Photo BY:@neetchan"""
+
     strings = {
         "name": "LoliArt",
         "loading_photo": "<emoji document_id=5215327832040811010>🔮</emoji> <b>Process your Loli Art...</b>",
@@ -26,7 +31,12 @@ class loliArt(loader.Module):
     
     async def loliartcmd(self, message):
         """-> RandomArt"""
-
+        
+        # Проверяем, разблокирована ли команда для пользователя
+        if message.sender_id not in unlocked_commands or not unlocked_commands[message.sender_id]:
+            await message.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
+            return
+        
         await utils.answer(message, self.strings("loading_photo"))
         
         async with self._client.conversation("@AnimeLoliChan_bot") as conv:
@@ -46,19 +56,69 @@ class loliArt(loader.Module):
                 
                 await message.delete()
 
-# Ваш основной код для работы с TelegramClient
+# Команда для loli hentai
+@loader.tds
+class lolihentai(loader.Module):
+    """Your the best friend in loli hentai"""
 
-async def setup_client():
-    print("Добро пожаловать в ShadowBot!")
-    print("Для начала работы нужно настроить API.")
-    print("Получите API данные на my.telegram.org")
-    api_id = input("Введите API ID: ")
-    api_hash = input("Введите API Hash: ")
-    return TelegramClient('session_name', api_id, api_hash)
+    strings = {
+        "name": "LoliHentai",
+        "loading_photo": "<emoji document_id=5215327832040811010>⏳</emoji> <b>loading your loli photo...</b>",
+        "error_loading": "<b>Failed to get photos. Please unblock @ferganteusbot</b>",
+        "search": "<emoji document_id=5328311576736833844>🔴</emoji> loading your photo..."
+    }
 
+    strings_ru = {
+        "name": "LoliHentai",
+        "loading_photo": "<emoji document_id=5215327832040811010>⏳</emoji> <b>загрузка вашей лоли фотографии...</b>",
+        "error_loading": "<b>Не удалось получить фотографии. Пожалуйста, разблокируйте @ferganteusbot</b>",
+        "search": "<emoji document_id=5328311576736833844>🔴</emoji> загрузка вашей фотографии..."
+    }
+    
+    async def lolicmd(self, message):
+        """-> random loli photo"""
+
+        # Проверяем, разблокирована ли команда для пользователя
+        if message.sender_id not in unlocked_commands or not unlocked_commands[message.sender_id]:
+            await message.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
+            return
+        
+        await utils.answer(message, self.strings("loading_photo"))
+        
+        async with self._client.conversation("@ferganteusbot") as conv:
+            try: 
+                lh = await conv.send_message("/lh")
+            except Exception as e:
+                return await utils.answer(message, self.strings("error_loading"))
+        
+            otvet = await conv.get_response()
+            await lh.delete()
+            if otvet.photo:
+                await message.client.send_message(
+                    message.peer_id,
+                    message=otvet,
+                    reply_to=getattr(message, "reply_to_msg_id", None))
+                await otvet.delete()
+                await message.delete()
+
+# Команда для ввода пароля и разблокировки команд
+@events.register(events.NewMessage(pattern='/secret'))
+async def secret_handler(event):
+    """Разблокировать команды loli и loliart по паролю"""
+    code = event.raw_text.split(" ")[1] if len(event.raw_text.split(" ")) > 1 else ""
+
+    # Проверяем правильность пароля
+    if code == SECRET_CODE:
+        unlocked_commands[event.sender_id] = True
+        await event.reply("Секретный код принят! Теперь вы можете использовать команды .loli и .loliart.")
+    else:
+        await event.reply("Неверный код! Попробуйте снова.")
+
+# Обновленная команда help
 @events.register(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
 async def help_handler(event):
     """Показывает список всех команд"""
+    
     help_text = """🔱 UGCLAWS USERBOT 🔱
 
 Доступные команды:
@@ -72,7 +132,14 @@ async def help_handler(event):
 • 💧.time_omsk - установить омское время
 • 💧.time_samara - установить самарское время"""
 
+    # Проверяем, доступна ли команда .loli и .loliart
+    if event.sender_id in unlocked_commands and unlocked_commands[event.sender_id]:
+        help_text += "\n• 💧.loli - случайная лоли фотография"
+        help_text += "\n• 💧.loliart - случайное лоли искусство"
+
     await event.edit(help_text)
+
+# Ваши старые команды
 
 @events.register(events.NewMessage(pattern=f'[{"".join(prefixes)}]anime'))
 async def anime_handler(event):
@@ -198,60 +265,30 @@ async def time_omsk_handler(event):
     """Переключить время на Омск"""
     global _time_timezone
     _time_timezone = 'Asia/Omsk'
-    await event.edit("Установлено омское время")
+    await event.edit("Время в нике будет отображаться по Омску")
 
 @events.register(events.NewMessage(pattern=f'[{"".join(prefixes)}]time_samara'))
 async def time_samara_handler(event):
     """Переключить время на Самару"""
     global _time_timezone
     _time_timezone = 'Europe/Samara'
-    await event.edit("Часовой пояс успешно изменён на Самару!")
+    await event.edit("Время в нике будет отображаться по Самаре")
 
 async def update_nick(client):
+    """Обновление времени в нике"""
     while _time_running:
-        try:
-            tz = pytz.timezone(_time_timezone)
-            current_time = datetime.now(tz).strftime("%H:%M")
-            double_struck_time = to_double_struck(current_time)
-            double_struck_bar = "𝕀"
+        current_time = datetime.now(pytz.timezone(_time_timezone)).strftime("%H:%M")
+        await client(EditProfileRequest(first_name=current_time))
+        await asyncio.sleep(60)  # Обновление каждую минуту
 
-            me = await client.get_me()
-            current_nick = me.first_name.split('𝕀')[0].strip()
-            new_nick = f"{current_nick} {double_struck_bar} {double_struck_time}"
-
-            await client(functions.account.UpdateProfileRequest(first_name=new_nick))
-
-            now = datetime.now()
-            sleep_time = 60 - now.second
-            await asyncio.sleep(sleep_time)
-        except Exception as e:
-            logger.error(f"Nick update error: {e}")
-            await asyncio.sleep(60)
-
-def to_double_struck(text):
-    """Преобразует текст в шрифт Double Struck"""
-    normal = "0123456789:"
-    double_struck = "𝟘𝟙𝟚𝟛𝟜𝟝𝟞𝟟𝟠𝟡:"
-    translation = str.maketrans(normal, double_struck)
-    return text.translate(translation)
-
-# Команда /secret [код]
-@events.register(events.NewMessage(pattern='/secret (.*)'))
-async def secret_handler(event):
-    """Включить команду .loliart через секретный код"""
-    code = event.pattern_match.group(1)
-
-    if code == SECRET_CODE:
-        await event.reply("Секретный код принят! Теперь можно использовать команду .loliart.")
-        # Включаем команду .loliart для пользователя
-        # Здесь можно создать систему прав для пользователей, чтобы они могли использовать команду
-    else:
-        await event.reply("Неверный код!")
-
+# Основной код для запуска бота
 async def main():
     client = await setup_client()
 
     handlers = [
+        secret_handler,  # Обработчик команды /secret
+        loliArt.loliartcmd,  # Обработчик команды .loliart
+        lolihentai.lolicmd,  # Обработчик команды .loli
         help_handler,
         anime_handler,
         im_handler,
@@ -260,8 +297,7 @@ async def main():
         time_msk_handler,
         time_ekb_handler,
         time_omsk_handler,
-        time_samara_handler,
-        loliArt.loliartcmd  # Включаем команду loliart
+        time_samara_handler
     ]
 
     for handler in handlers:
@@ -269,6 +305,7 @@ async def main():
 
     print("Бот запускается...")
     await client.start()
+
     print("Бот успешно запущен!")
     await client.run_until_disconnected()
 
