@@ -1,4 +1,4 @@
-from telethon import TelegramClient, events, functions, types
+from telethon import TelegramClient, events
 import asyncio
 import random
 import aiohttp
@@ -18,83 +18,68 @@ SECRET_CODE = "unblockcmd"  # Код для разблокировки кома�
 # Словарь для хранения информации о пользователях, которые разблокировали команды
 unlocked_commands = {}
 
-# Создание клиента
-client = TelegramClient('session_name', api_id, api_hash)
+# Запросить у пользователя ввод
+api_id = input("Введите api_id: ")
+api_hash = input("Введите api_hash: ")
+
+# Создать клиент с введенными значениями
+client = TelegramClient('session_name', int(api_id), api_hash)
 
 # Команда для loliart
-class LoliArt:
-    """RandomArt/Photo BY:@neetchan"""
-
-    strings = {
-        "name": "LoliArt",
-        "loading_photo": "<emoji document_id=5215327832040811010>🔮</emoji> <b>Process your Loli Art...</b>",
-        "error_loading": "<b>Failed to get photos. Please unblock @AnimeLoliChan_bot</b>",
-    }
+@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loliart'))
+async def loliartcmd(event):
+    """-> RandomArt"""
     
-    async def loliartcmd(self, message):
-        """-> RandomArt"""
+    # Проверяем, разблокирована ли команда для пользователя
+    if event.sender_id not in unlocked_commands or not unlocked_commands[event.sender_id]:
+        await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
+        return
+    
+    await event.respond("<emoji document_id=5215327832040811010>🔮</emoji> <b>Process your Loli Art...</b>")
+    
+    async with client.conversation("@AnimeLoliChan_bot") as conv:
+        await conv.send_message("/lol")
+        otvet = await conv.get_response()
         
-        # Проверяем, разблокирована ли команда для пользователя
-        if message.sender_id not in unlocked_commands or not unlocked_commands[message.sender_id]:
-            await message.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
-            return
-        
-        await message.reply(self.strings["loading_photo"])
-        
-        async with client.conversation("@AnimeLoliChan_bot") as conv:
-            await conv.send_message("/lol")
-        
-            otvet = await conv.get_response()
-          
-            if otvet.photo:
-                phota = await client.download_media(otvet.photo, "loli_hentai")
-                await client.send_message(
-                    message.peer_id,
-                    file=phota,
-                    reply_to=message.reply_to_msg_id if message.reply_to_msg_id else None,
-                )
-
-                os.remove(phota)
-                
-                await message.delete()
+        if otvet.photo:
+            photo = await client.download_media(otvet.photo, "loli_hentai")
+            await event.client.send_message(
+                event.peer_id,
+                file=photo,
+                reply_to=getattr(event, "reply_to_msg_id", None),
+            )
+            os.remove(photo)
+            await event.delete()
 
 # Команда для loli hentai
-class LoliHentai:
-    """Your the best friend in loli hentai"""
+@client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]loli'))
+async def lolicmd(event):
+    """-> random loli photo"""
 
-    strings = {
-        "name": "LoliHentai",
-        "loading_photo": "<emoji document_id=5215327832040811010>⏳</emoji> <b>loading your loli photo...</b>",
-        "error_loading": "<b>Failed to get photos. Please unblock @ferganteusbot</b>",
-        "search": "<emoji document_id=5328311576736833844>🔴</emoji> loading your photo..."
-    }
+    # Проверяем, разблокирована ли команда для пользователя
+    if event.sender_id not in unlocked_commands or not unlocked_commands[event.sender_id]:
+        await event.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
+        return
     
-    async def lolicmd(self, message):
-        """-> random loli photo"""
-
-        # Проверяем, разблокирована ли команда для пользователя
-        if message.sender_id not in unlocked_commands or not unlocked_commands[message.sender_id]:
-            await message.reply("Команда не разблокирована! Введите /secret [пароль] для доступа.")
-            return
+    await event.respond("<emoji document_id=5215327832040811010>⏳</emoji> <b>loading your loli photo...</b>")
+    
+    async with client.conversation("@ferganteusbot") as conv:
+        try: 
+            lh = await conv.send_message("/lh")
+        except Exception as e:
+            return await event.respond("<b>Failed to get photos. Please unblock @ferganteusbot</b>")
         
-        await message.reply(self.strings["loading_photo"])
+        otvet = await conv.get_response()
+        await lh.delete()
         
-        async with client.conversation("@ferganteusbot") as conv:
-            try: 
-                lh = await conv.send_message("/lh")
-            except Exception as e:
-                return await message.reply(self.strings["error_loading"])
-        
-            otvet = await conv.get_response()
-            await lh.delete()
-            if otvet.photo:
-                await client.send_message(
-                    message.peer_id,
-                    message=otvet,
-                    reply_to=message.reply_to_msg_id if message.reply_to_msg_id else None
-                )
-                await otvet.delete()
-                await message.delete()
+        if otvet.photo:
+            await event.client.send_message(
+                event.peer_id,
+                message=otvet,
+                reply_to=getattr(event, "reply_to_msg_id", None)
+            )
+            await otvet.delete()
+            await event.delete()
 
 # Команда для ввода пароля и разблокировки команд
 @client.on(events.NewMessage(pattern='/secret'))
@@ -134,7 +119,7 @@ async def help_handler(event):
 
     await event.edit(help_text)
 
-# Команда .anime
+# Ваши старые команды
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]anime'))
 async def anime_handler(event):
     """Отправляет случайное аниме фото"""
@@ -163,7 +148,6 @@ async def anime_handler(event):
     except Exception as e:
         await message.edit(f"Ошибка: {e}")
 
-# Команда для имитации действий
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]im'))
 async def im_handler(event):
     """Запустить имитацию: .im <режим>
@@ -212,7 +196,6 @@ async def _imitate(client, chat_id, mode):
         logger.error(f"Imitation error: {e}")
         _imitation_active[chat_id] = False
 
-# Команда для остановки имитации
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]imstop'))
 async def imstop_handler(event):
     """Остановить имитацию"""
@@ -273,31 +256,12 @@ async def time_samara_handler(event):
 async def update_nick(client):
     """Обновление времени в нике"""
     while _time_running:
-        now = datetime.now(pytz.timezone(_time_timezone))
-        await client(UpdateProfileRequest(first_name=f"Time: {now.strftime('%H:%M:%S')}"))
-        await asyncio.sleep(60)
+        current_time = datetime.now(pytz.timezone(_time_timezone)).strftime("%H:%M")
+        await client(EditProfileRequest(first_name=current_time))
+        await asyncio.sleep(60)  # Обновление каждую минуту
 
 # Основной код для запуска бота
 async def main():
-    # Создаем экземпляры классов команд
-    loli_art = LoliArt()
-    loli_hentai = LoliHentai()
-
-    # Регистрируем обработчики команд
-    client.add_event_handler(loli_art.loliartcmd, events.NewMessage(pattern=f'[{"".join(prefixes)}]loliart'))
-    client.add_event_handler(loli_hentai.lolicmd, events.NewMessage(pattern=f'[{"".join(prefixes)}]loli'))
-    client.add_event_handler(secret_handler)
-    client.add_event_handler(help_handler)
-    client.add_event_handler(anime_handler)
-    client.add_event_handler(im_handler)
-    client.add_event_handler(imstop_handler)
-    client.add_event_handler(time_handler)
-    client.add_event_handler(time_msk_handler)
-    client.add_event_handler(time_ekb_handler)
-    client.add_event_handler(time_omsk_handler)
-    client.add_event_handler(time_samara_handler)
-
-    print("Бот запускается...")
     await client.start()
     print("Бот успешно запущен!")
     await client.run_until_disconnected()
