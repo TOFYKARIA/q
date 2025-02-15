@@ -90,9 +90,9 @@ async def secret_handler(event):
     # Проверяем правильность пароля
     if code == SECRET_CODE:
         unlocked_commands[event.sender_id] = True
-        await event.reply("Секретный код принят! Теперь вы можете использовать команды .loli и .loliart.")
+        await event.reply("нихуя сибе Теперь вы можете использовать команды .loli и .loliart.")
     else:
-        await event.reply("Неверный код! Попробуйте снова.")
+        await event.reply("долбаебище это не тот код. Попробуйте снова.")
 
 # Обновленная команда help
 @client.on(events.NewMessage(pattern=f'[{"".join(prefixes)}]help'))
