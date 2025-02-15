@@ -67,7 +67,7 @@ async def lolicmd(event):
         try: 
             lh = await conv.send_message("/lh")
         except Exception as e:
-            return await event.respond("Failed to get photos. Please unblock @ferganteusbot")
+            return await event.respond("инвалид разблокируй @Ferganteusbot")
         
         otvet = await conv.get_response()
         await lh.delete()
