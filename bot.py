@@ -1,3 +1,4 @@
+import json
 from telethon import TelegramClient, events
 import asyncio
 import random
@@ -18,9 +19,36 @@ SECRET_CODE = "unblockcmd"  # Код для разблокировки кома�
 # Словарь для хранения информации о пользователях, которые разблокировали команды
 unlocked_commands = {}
 
-# Запросить у пользователя ввод
-api_id = input("Введите api_id: ")
-api_hash = input("Введите api_hash: ")
+# Путь к конфигурационному файлу
+config_file = "config.json"
+
+# Функция для загрузки конфигурации из файла
+def load_config():
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            return json.load(f)
+    return {}
+
+# Функция для сохранения конфигурации в файл
+def save_config(config):
+    with open(config_file, 'w') as f:
+        json.dump(config, f)
+
+# Загрузить сохраненную конфигурацию
+config = load_config()
+
+# Если данные api_id и api_hash не сохранены, запросим их у пользователя
+if "api_id" not in config or "api_hash" not in config:
+    api_id = input("Введите api_id: ")
+    api_hash = input("Введите api_hash: ")
+
+    # Сохраняем данные в конфиг
+    config["api_id"] = api_id
+    config["api_hash"] = api_hash
+    save_config(config)
+else:
+    api_id = config["api_id"]
+    api_hash = config["api_hash"]
 
 # Создать клиент с введенными значениями
 client = TelegramClient('session_name', int(api_id), api_hash)
@@ -64,7 +92,7 @@ async def secret_handler(event):
     # Проверяем правильность пароля
     if code == SECRET_CODE:
         unlocked_commands[event.sender_id] = True
-        await event.reply("нихуя сибе ти умний теперь ты можешь юзать.loli")
+        await event.reply("нихуя сибе ти умный теперь ты можешь юзать.loli")
     else:
         await event.reply("далбаебище эта не такой код. папробуей ещо.")
 
